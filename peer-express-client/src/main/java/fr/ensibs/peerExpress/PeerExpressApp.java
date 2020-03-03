@@ -1,16 +1,13 @@
-package fr.ensibs.photosharing;
+package fr.ensibs.peerExpress;
 
 import java.util.Properties;
 import java.util.Scanner;
-import java.io.File;
 
 /**
-* The entry point for the user photo sharing application that allows to enter
-* descriptions and tags of photos to be shared and filter and choose photos
-* from their tags
+* The entry point for the Peer Express messaging application that allows to
+* send messages in a peer-to-peer manner to other users.
 */
-public class PhotoSharingApp
-{
+public class PeerExpressApp {
 
     /**
      * The user of the application
@@ -18,50 +15,38 @@ public class PhotoSharingApp
     private final DefaultUser user;
 
     /**
-     * Print a usage message and exit
+     * Print a usage message and exit.
      */
-    private static void usage()
-    {
-        System.out.println("Usage: java PhotoSharingApp <user_name> <directory> <host> <port>");
-        System.out.println("Launch the user photo sharing application");
-        System.out.println("with:");
-        System.out.println("<user_name>  the user name in the community");
-        System.out.println("<directory>  the local directory where photos are stored");
-        System.out.println("<host>  the host address of the JORAM server");
-        System.out.println("<port>  the opened port of the JORAM server");
+    private static void usage() {
+        System.out.println("Usage: java PeerExpressApp <username> <host> <port> <service>");
+        System.out.println("Launch the Peer Express client application, with:");
+        System.out.println("<username>  the username in the community");
+        System.out.println("<host>      the host address of the local JORAM server");
+        System.out.println("<port>      the opened port of the local JORAM server");
         System.exit(0);
     }
 
     /**
-     * Application entry point
-     *
+     * Application entry point.
      * @param args see usage
      */
-    public static void main(String[] args)
-    {
-        if (args.length != 4) {
+    public static void main(String[] args) {
+        if (args.length != 3)
             usage();
-        }
 
-        String userName = args[0];
-        File directory = new File(args[1]);
-        String host = args[2];
+        String username = args[0];
+        String host = args[1];
         int port = 0;
 
-        if (!directory.isDirectory()) {
-            System.out.println("Unknown directory: " + args[1]);
-            usage();
-        }
-
         try {
-            port = Integer.parseInt(args[3]);
+            port = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
-            System.out.println("The port is not a number: " + args[3]);
+            System.out.println("The port is not a number: " + args[2]);
             usage();
         }
 
         try {
-            PhotoSharingApp instance = new PhotoSharingApp(userName, directory, host, port);
+            PeerExpressApp instance = new PeerExpressApp(username, host, port);
             instance.run();
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,16 +54,16 @@ public class PhotoSharingApp
     }
 
     /**
-     * Constructor
-     *
-     * @param userName the user name in the community
-     * @param directory the local directory where photos are stored
-     * @param host the host address of the JORAM server
-     * @param port the opened port of the JORAM server
+     * Constructor.
+     * @param username the username in the community
+     * @param host the host address of the local JORAM server
+     * @param port the opened port of the local JORAM server
      */
-    public PhotoSharingApp(String userName, File directory, String host, int port) throws Exception
-    {
-        this.user = new DefaultUser(userName, directory, host, port);
+    public PeerExpressApp(String username, String host, int port) throws Exception {
+        //this.user = new DefaultUser(username, host, port);
+        PeerExpressSignalingImplService service = new PeerExpressImplService();
+        PeerExpressSignaling signaling = service.getPeerExpressSignalingPort();
+        signaling.registerUser(username, host, port);
     }
 
     /**

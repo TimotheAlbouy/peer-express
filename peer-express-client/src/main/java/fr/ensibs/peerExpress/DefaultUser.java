@@ -1,4 +1,4 @@
-package fr.ensibs.photosharing;
+package fr.ensibs.peerExpress;
 
 import java.io.File;
 import java.io.IOException;
