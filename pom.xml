@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- Project description -->
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.ensibs</groupId>
+    <artifactId>peerExpress</artifactId>
+    <version>2.0</version>
+    <packaging>pom</packaging>
+    <name>Root of the Peer-Express application</name>
+    <description>A peer-to-peer messaging application</description>
+
+    <modules>
+        <module>peer-express-signaling</module>
+        <module>peer-express-client</module>
+    </modules>
+
+</project>

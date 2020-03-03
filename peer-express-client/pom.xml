@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- Project description -->
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.ensibs</groupId>
+    <artifactId>peer-express-client</artifactId>
+    <version>2.0</version>
+    <packaging>jar</packaging>
+    <name>Client of the Peer-Express application</name>
+    <description>A peer-to-peer messaging application</description>
+
+    <!-- Project properties -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.java.version>8</project.java.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- copy the dependencies to the lib/ directory -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- make an executable jar with classpath to the lib/ dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>fr.ensibs.peerExpress.PeerExpressApp</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- joram dependencies -->
+        <dependency>
+            <groupId>org.ow2.joram</groupId>
+            <artifactId>a3-rt</artifactId>
+            <version>5.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.joram</groupId>
+            <artifactId>joram-mom-core</artifactId>
+            <version>5.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.joram</groupId>
+            <artifactId>jndi-server</artifactId>
+            <version>5.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.joram</groupId>
+            <artifactId>joram-client-jms</artifactId>
+            <version>5.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.joram</groupId>
+            <artifactId>jndi-client</artifactId>
+            <version>5.17.0</version>
+        </dependency>
+    </dependencies>
+
+</project>
