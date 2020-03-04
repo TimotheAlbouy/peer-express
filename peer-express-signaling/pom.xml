@@ -30,7 +30,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>fr.ensibs.peerExpress.NotificationServiceLauncher</mainClass>
+                            <mainClass>fr.ensibs.peerExpress.PeerExpressSignalingPublisher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
