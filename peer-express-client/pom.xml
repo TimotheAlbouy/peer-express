@@ -64,7 +64,7 @@
                             <goal>wsimport</goal>
                         </goals>
                         <configuration>
-                            <packageName>fr.ensibs.notifications</packageName>
+                            <packageName>fr.ensibs.peerExpress</packageName>
                             <keep>true</keep>
                             <wsdlUrls>
                                 <wsdlUrl>http://localhost:5000/ws/PeerExpressSignaling?wsdl</wsdlUrl>

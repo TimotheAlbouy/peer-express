@@ -9,8 +9,8 @@
     <artifactId>peer-express-signaling</artifactId>
     <version>1</version>
     <packaging>jar</packaging>
-    <name>Notifications application</name>
-    <description>A distributed application that manages notification producers and notification consumers</description>
+    <name>Signaling server of the Peer-Express application</name>
+    <description>A peer-to-peer messaging application</description>
   
     <!-- Project properties -->
     <properties>
