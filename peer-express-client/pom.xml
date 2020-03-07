@@ -79,30 +79,16 @@
     <dependencies>
         <!-- joram dependencies -->
         <dependency>
-            <groupId>org.ow2.joram</groupId>
-            <artifactId>a3-rt</artifactId>
-            <version>5.17.0</version>
+            <groupId>fr.ensibs</groupId>
+            <artifactId>joram-server</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.joram</groupId>
-            <artifactId>joram-mom-core</artifactId>
-            <version>5.17.0</version>
+            <groupId>fr.ensibs</groupId>
+            <artifactId>joram-admin</artifactId>
+            <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.ow2.joram</groupId>
-            <artifactId>jndi-server</artifactId>
-            <version>5.17.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.joram</groupId>
-            <artifactId>joram-client-jms</artifactId>
-            <version>5.17.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.joram</groupId>
-            <artifactId>jndi-client</artifactId>
-            <version>5.17.0</version>
-        </dependency>
+        <!-- jaxws dependencies -->
         <dependency>
             <groupId>com.sun.xml.ws</groupId>
             <artifactId>jaxws-rt</artifactId>

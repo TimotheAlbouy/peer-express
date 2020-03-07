@@ -26,7 +26,7 @@ public class User {
     private int port;
 
     /**
-     * the registration id of the user
+     * the registration id of the user, used during unregistration to improve security
      */
     private String registrationId;
 

@@ -1,12 +1,15 @@
 package fr.ensibs.peerExpress;
 
 import java.util.ArrayList;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 /**
- * A web service allowing the signaling phase before the peer-to-peer communication between users.
+ * A web service allowing the signaling phase before the peer-to-peer
+ * communication between users.
  */
-@WebService(name = "PeerExpressSignaling")
+@WebService(name = "PeerExpressSignaling", targetNamespace = "http://bakery.ensibs.fr")
 public interface PeerExpressSignaling {
 
     /**
@@ -16,7 +19,11 @@ public interface PeerExpressSignaling {
      * @param port the opened port of the local JORAM server of the user
      * @return the registration id if the user was successfully registered, null otherwise
      */
-    String registerUser(String username, String host, int port);
+    @WebMethod(operationName = "registerUser")
+    String registerUser(@WebParam(name = "username") String username,
+                        @WebParam(name = "host") String host,
+                        @WebParam(name = "port") int port)
+            throws PeerExpressSignalingHTTP;
 
     /**
      * Unregister an user in the signaling rendezvous point.
@@ -24,12 +31,16 @@ public interface PeerExpressSignaling {
      * @param registrationId the registration id of the user
      * @return true if the user was successfully unregistered, false otherwise
      */
-    boolean unregisterUser(String username, String registrationId);
+    @WebMethod(operationName = "unregisterUser")
+    void unregisterUser(@WebParam(name = "username") String username,
+                        @WebParam(name = "registrationId") String registrationId)
+            throws PeerExpressSignalingHTTP;
 
     /**
      * Get all the registered users of the signaling rendezvous point.
      * @return the list of registered users
      */
+    @WebMethod(operationName = "getRegisteredUsers")
     ArrayList<User> getRegisteredUsers();
 
 }

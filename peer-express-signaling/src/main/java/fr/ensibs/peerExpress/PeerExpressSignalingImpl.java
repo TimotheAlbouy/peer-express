@@ -6,28 +6,29 @@ import java.util.UUID;
 import javax.jws.WebService;
 
 /**
- * An intermediary between producers and consumers that exchange messages on a
- * forest of topics.
+ * A web service allowing the signaling phase before the peer-to-peer
+ * communication between users.
  */
-@WebService(name = "PeerExpressSignaling")
+@WebService(endpointInterface = "fr.ensibs.peerExpress.PeerExpressSignaling",
+        serviceName = "PeerExpressSignaling",
+        portName = "PeerExpressSignalingPort")
 public class PeerExpressSignalingImpl implements PeerExpressSignaling {
 
     /**
      * the list of registered users
      */
-    private HashMap<String, User> registeredUsers;
-
-    /**
-     * Constructor.
-     */
-    public PeerExpressSignalingImpl() {
-        this.registeredUsers = new HashMap<>();
-    }
+    private HashMap<String, User> registeredUsers = new HashMap<>();
 
     @Override
-    public String registerUser(String username, String host, int port) {
-        if (username == null || host == null || port < 0 || port > 65535 || this.registeredUsers.containsKey(username))
-            return null;
+    public String registerUser(String username, String host, int port) throws PeerExpressSignalingHTTP {
+        if (username == null || host == null)
+            throw new PeerExpressSignalingHTTP(400, "The parameters must be specified");
+
+        if (port < 0 || port > 65535)
+            throw new PeerExpressSignalingHTTP(400, "The port number is invalid");
+
+        if (this.registeredUsers.containsKey(username))
+            throw new PeerExpressSignalingHTTP(409, "The username is already taken");
 
         String registrationId = UUID.randomUUID().toString();
         User user = new User(username, host, port, registrationId);
@@ -36,16 +37,18 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
     }
 
     @Override
-    public boolean unregisterUser(String username, String registrationId) {
+    public void unregisterUser(String username, String registrationId) throws PeerExpressSignalingHTTP {
         if (username == null || registrationId == null)
-            return false;
+            throw new PeerExpressSignalingHTTP(400, "The parameters must be specified");
 
         User user = this.registeredUsers.get(username);
-        if (user == null || registrationId.equals(user.getRegistrationId()))
-            return false;
+        if (user == null)
+            throw new PeerExpressSignalingHTTP(404, "The user does not exist");
+
+        if (registrationId.equals(user.getRegistrationId()))
+            throw new PeerExpressSignalingHTTP(401, "The registration ID is incorrect");
 
         this.registeredUsers.remove(username);
-        return true;
     }
 
     @Override
