@@ -2,7 +2,6 @@ package fr.ensibs.peerExpress;
 
 import javax.xml.ws.Endpoint;
 import java.net.InetAddress;
-import java.util.Scanner;
 
 /**
  * Web service publisher of the Peer Express signaling server.
