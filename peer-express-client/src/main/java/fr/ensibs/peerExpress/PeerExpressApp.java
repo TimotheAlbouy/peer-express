@@ -68,10 +68,10 @@ public class PeerExpressApp {
             PeerExpressApp instance = new PeerExpressApp(username, port);
             instance.run();
         } catch (NumberFormatException e) {
-            System.out.println("The port is not a number: " + args[1]);
+            System.err.println("The port is not a number: " + args[1]);
             usage();
         } catch (Exception e) {
-            System.out.println("Error during app launch: " + e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 
@@ -88,7 +88,6 @@ public class PeerExpressApp {
         Joram joram = new Joram(port);
         joram.run();
 
-        /* */
         // create a queue
         JoramAdmin joramAdmin = new JoramAdmin(host, port);
         joramAdmin.createQueue(DEST);
@@ -104,7 +103,7 @@ public class PeerExpressApp {
                 String content = ((TextMessage) message).getText();
                 System.out.println("[" + sender + "]: " + content);
             } catch (JMSException e) {
-                System.out.println("Error during message reception: " + e.getMessage());
+                System.err.println(e.getMessage());
             }
         });
 
@@ -119,7 +118,6 @@ public class PeerExpressApp {
             UserInfo info = new UserInfo(user, null, null);
             this.usersInfo.put(user.getUsername(), info);
         }
-        /* */
     }
 
     /**
@@ -176,7 +174,7 @@ public class PeerExpressApp {
             TextMessage textMessage = session.createTextMessage(message);
             producer.send(textMessage);
         } catch (JMSException | NamingException e) {
-            System.out.println("Error during message sending: " + e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 
@@ -198,7 +196,7 @@ public class PeerExpressApp {
             this.signaling.unregisterUser(this.username, this.registrationId);
             System.exit(0);
         } catch (PeerExpressSignalingHTTP_Exception e) {
-            System.out.println("Error during quitting: " + e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 
