@@ -131,13 +131,13 @@ public class PeerExpressApp {
 
         Scanner scanner = new Scanner(System.in);
         String line = scanner.nextLine();
-        while (!line.equals("quit") && !line.equals("QUIT")) {
-            String[] command = line.split(" +");
-            switch (command[0]) {
+        while (true) {
+            String[] tokens = line.split(" +");
+            switch (tokens[0]) {
             case "send":
             case "SEND":
-                if (command.length >= 2) {
-                    String username = command[1];
+                if (tokens.length >= 2) {
+                    String username = tokens[1];
                     String message = line.replaceFirst("send", "")
                                          .replaceFirst(username, "")
                                          .trim();
@@ -150,12 +150,14 @@ public class PeerExpressApp {
             case "USERS":
                 this.showUsers();
                 break;
+            case "quit":
+            case "QUIT":
+                this.quit();
             default:
-                System.err.println("Unknown command: \"" + command[0] + "\"");
+                System.err.println("Unknown command: \"" + tokens[0] + "\"");
             }
             line = scanner.nextLine();
         }
-        quit();
     }
 
     /**
@@ -194,10 +196,10 @@ public class PeerExpressApp {
     public void quit() {
         try {
             this.signaling.unregisterUser(this.username, this.registrationId);
-            System.exit(0);
         } catch (PeerExpressSignalingHTTP_Exception e) {
             System.err.println(e.getMessage());
         }
+        System.exit(0);
     }
 
     /**

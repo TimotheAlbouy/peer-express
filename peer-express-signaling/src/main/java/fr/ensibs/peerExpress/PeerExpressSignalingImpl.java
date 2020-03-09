@@ -45,7 +45,7 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
         if (user == null)
             throw new PeerExpressSignalingHTTP(404, "The user does not exist");
 
-        if (registrationId.equals(user.getRegistrationId()))
+        if (!registrationId.equals(user.getRegistrationId()))
             throw new PeerExpressSignalingHTTP(401, "The registration ID is incorrect");
 
         this.registeredUsers.remove(username);
