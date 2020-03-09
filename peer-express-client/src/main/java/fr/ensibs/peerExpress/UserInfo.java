@@ -92,4 +92,12 @@ public class UserInfo {
         this.producer = producer;
     }
 
+    @Override
+    public String toString() {
+        return "UserInfo{" + user.getUsername() +
+                ", " + user.getHost() + ':' + user.getPort() +
+                ", session established: " + isSessionEstablished() +
+                '}';
+    }
+
 }

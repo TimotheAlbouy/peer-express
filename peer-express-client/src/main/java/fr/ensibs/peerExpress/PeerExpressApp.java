@@ -168,12 +168,13 @@ public class PeerExpressApp {
     public void send(String username, String message) {
         try {
             UserInfo info = this.usersInfo.get(username);
-            if (info.isSessionEstablished())
+            if (!info.isSessionEstablished())
                 this.establishUserSession(username);
 
             Session session = info.getSession();
             MessageProducer producer = info.getProducer();
             TextMessage textMessage = session.createTextMessage(message);
+            textMessage.setStringProperty("sender", this.username);
             producer.send(textMessage);
         } catch (JMSException | NamingException e) {
             System.err.println(e.getMessage());
