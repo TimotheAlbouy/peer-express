@@ -20,3 +20,5 @@ buildNumber.properties
 
 server.log.*
 a3servers.xml
+
+joram_config_*/
