@@ -13,6 +13,8 @@
     <description>A peer-to-peer messaging application</description>
 
     <modules>
+        <module>joram-server</module>
+        <module>joram-admin</module>
         <module>peer-express-signaling</module>
         <module>peer-express-client</module>
     </modules>

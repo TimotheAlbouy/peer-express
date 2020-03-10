@@ -7,10 +7,14 @@ import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.xml.ws.AsyncHandler;
+import javax.xml.ws.Response;
+import java.io.File;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 /**
 * The entry point for the PeerExpress messaging application that allows to
@@ -24,9 +28,9 @@ public class PeerExpressApp {
     private String username;
 
     /**
-     * the registration id of the user
+     * the registration token of the user
      */
-    private String registrationId;
+    private String token;
 
     /**
      * the info on the users identified by their username
@@ -47,10 +51,12 @@ public class PeerExpressApp {
      * Print a usage message and exit.
      */
     private static void usage() {
-        System.out.println("Usage: java PeerExpressApp <username> <port>");
+        System.out.println("Usage: java PeerExpressApp <username> <port> <config path>?");
         System.out.println("Launch the PeerExpress client application, with:");
-        System.out.println("<username>  the username in the community");
-        System.out.println("<port>      the opened port of the local JORAM server");
+        System.out.println("<username>      the username in the community");
+        System.out.println("<port>          the opened port of the local JORAM server");
+        System.out.println("<config path>   (optional) the path of the config directory of the JORAM server");
+        System.out.println("             use different paths if you want to run multiple clients on the same machine");
         System.exit(0);
     }
 
@@ -59,13 +65,16 @@ public class PeerExpressApp {
      * @param args see usage
      */
     public static void main(String[] args) {
-        if (args.length != 2)
+        if (args.length != 2 && args.length != 3)
             usage();
 
         try {
             String username = args[0];
             int port = Integer.parseInt(args[1]);
-            PeerExpressApp instance = new PeerExpressApp(username, port);
+            File configDirectory = null;
+            if (args.length == 3)
+                configDirectory = new File(args[2]);
+            PeerExpressApp instance = new PeerExpressApp(username, port, configDirectory);
             instance.run();
         } catch (NumberFormatException e) {
             System.err.println("The port is not a number: " + args[1]);
@@ -79,13 +88,17 @@ public class PeerExpressApp {
      * Constructor.
      * @param username the username in the community
      * @param port the opened port of the local JORAM server
+     * @param configDirectory the JORAM configuration directory, if set to null, use $USER_HOME/.joram
      */
-    public PeerExpressApp(String username, int port) throws Exception {
+    public PeerExpressApp(String username, int port, File configDirectory) throws Exception {
         this.username = username;
         String host = InetAddress.getLocalHost().getHostName();
 
         // set up the local JORAM server
-        Joram joram = new Joram(port);
+        Joram joram;
+        if (configDirectory != null)
+            joram = new Joram(port, configDirectory);
+        else joram = new Joram(port);
         joram.run();
 
         // create a queue
@@ -106,11 +119,12 @@ public class PeerExpressApp {
                 System.err.println(e.getMessage());
             }
         });
+        localConnection.start();
 
         // register the user in the SOAP signaling server
         PeerExpressSignaling_Service service = new PeerExpressSignaling_Service();
         this.signaling = service.getPeerExpressSignalingPort();
-        this.registrationId = this.signaling.registerUser(username, host, port);
+        this.token = this.signaling.registerUser(username, host, port);
 
         // create the list containing info on the other users
         List<User> registeredUsers = this.signaling.getRegisteredUsers();
@@ -118,6 +132,9 @@ public class PeerExpressApp {
             UserInfo info = new UserInfo(user, null, null);
             this.usersInfo.put(user.getUsername(), info);
         }
+
+        // start fetching newly registered users
+        this.startLongPolling();
     }
 
     /**
@@ -196,7 +213,7 @@ public class PeerExpressApp {
      */
     public void quit() {
         try {
-            this.signaling.unregisterUser(this.username, this.registrationId);
+            this.signaling.unregisterUser(this.username, this.token);
         } catch (PeerExpressSignalingHTTP_Exception e) {
             System.err.println(e.getMessage());
         }
@@ -221,6 +238,7 @@ public class PeerExpressApp {
         MessageProducer producer = session.createProducer(destination);
         info.setSession(session);
         info.setProducer(producer);
+        connection.start();
     }
 
     /**
@@ -260,6 +278,27 @@ public class PeerExpressApp {
         this.setJNDIProps(host, port);
         Context context = new InitialContext();
         return (Destination) context.lookup(DEST);
+    }
+
+    /**
+     * Start the long polling to fetch newly registered users.
+     */
+    private void startLongPolling() {
+        AsyncHandler<TakeNewlyRegisteredUserResponse> handler = new AsyncHandler<TakeNewlyRegisteredUserResponse>() {
+            @Override
+            public void handleResponse(Response<TakeNewlyRegisteredUserResponse> response) {
+                try {
+                    User user = response.get().getReturn();
+                    UserInfo info = new UserInfo(user, null, null);
+                    usersInfo.put(user.getUsername(), info);
+                    System.out.println("[" + user.getUsername() + "] connected.");
+                    signaling.takeNewlyRegisteredUserAsync(username, token, this);
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        this.signaling.takeNewlyRegisteredUserAsync(this.username, this.token, handler);
     }
 
 }

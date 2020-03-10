@@ -32,20 +32,24 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
 
         String registrationId = UUID.randomUUID().toString();
         User user = new User(username, host, port, registrationId);
+
+        for (User registeredUser : this.registeredUsers.values())
+            registeredUser.addNewlyRegisteredUser(user);
+
         this.registeredUsers.put(username, user);
         return registrationId;
     }
 
     @Override
-    public void unregisterUser(String username, String registrationId) throws PeerExpressSignalingHTTP {
-        if (username == null || registrationId == null)
+    public void unregisterUser(String username, String token) throws PeerExpressSignalingHTTP {
+        if (username == null || token == null)
             throw new PeerExpressSignalingHTTP(400, "The parameters must be specified");
 
         User user = this.registeredUsers.get(username);
         if (user == null)
             throw new PeerExpressSignalingHTTP(404, "The user does not exist");
 
-        if (!registrationId.equals(user.getRegistrationId()))
+        if (!token.equals(user.getToken()))
             throw new PeerExpressSignalingHTTP(401, "The registration ID is incorrect");
 
         this.registeredUsers.remove(username);
@@ -54,6 +58,21 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
     @Override
     public ArrayList<User> getRegisteredUsers() {
         return new ArrayList<>(this.registeredUsers.values());
+    }
+
+    @Override
+    public User takeNewlyRegisteredUser(String username, String token) throws PeerExpressSignalingHTTP {
+        if (username == null || token == null)
+            throw new PeerExpressSignalingHTTP(400, "The parameters must be specified");
+
+        User user = this.registeredUsers.get(username);
+        if (user == null)
+            throw new PeerExpressSignalingHTTP(404, "The user does not exist");
+
+        if (!token.equals(user.getToken()))
+            throw new PeerExpressSignalingHTTP(401, "The registration ID is incorrect");
+
+        return user.takeNewlyRegisteredUser();
     }
 
 }
