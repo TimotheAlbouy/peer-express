@@ -52,11 +52,25 @@ public interface PeerExpressSignaling {
      * Block the execution until a new user has registered, and return it.
      * @param username the username of the user in the community
      * @param token the registration token of the user
-     * @return the last user that has registered
+     * @return the first user in the queue that has registered
      * @throws PeerExpressSignalingHTTP if an error occurred
      */
-    @WebMethod(operationName = "takeNewlyRegisteredUser")
-    User takeNewlyRegisteredUser(
+    @WebMethod(operationName = "takeNewUserRegistration")
+    User takeNewUserRegistration(
+            @WebParam(name = "username", partName = "username") String username,
+            @WebParam(name = "token", partName = "token") String token)
+            throws PeerExpressSignalingHTTP
+    ;
+
+    /**
+     * Block the execution until a new user has deregistered, and return it.
+     * @param username the username of the user in the community
+     * @param token the registration token of the user
+     * @return the first user in the queue that has deregistered
+     * @throws PeerExpressSignalingHTTP if an error occurred
+     */
+    @WebMethod(operationName = "takeNewUserDeregistration")
+    User takeNewUserDeregistration(
             @WebParam(name = "username", partName = "username") String username,
             @WebParam(name = "token", partName = "token") String token)
             throws PeerExpressSignalingHTTP

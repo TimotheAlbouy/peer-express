@@ -35,7 +35,12 @@ public class User {
     /**
      * the blocking queue containing newly registered users
      */
-    private BlockingQueue<User> newlyRegisteredUsers = new LinkedBlockingQueue<>();
+    private BlockingQueue<User> newUserRegistrations = new LinkedBlockingQueue<>();
+
+    /**
+     * the blocking queue containing deregistered users
+     */
+    private BlockingQueue<User> newUserDeregistrations = new LinkedBlockingQueue<>();
 
     /**
      * Constructor.
@@ -55,8 +60,16 @@ public class User {
      * Add a newly registered user to the queue.
      * @param user the user to add
      */
-    public void addNewlyRegisteredUser(User user) {
-        this.newlyRegisteredUsers.add(user);
+    public void addNewUserRegistration(User user) {
+        this.newUserRegistrations.add(user);
+    }
+
+    /**
+     * Add a deregistered user to the queue.
+     * @param user the user to add
+     */
+    public void addNewUserDeregistration(User user) {
+        this.newUserDeregistrations.add(user);
     }
 
     /**
@@ -64,9 +77,22 @@ public class User {
      * waiting if necessary until one becomes available.
      * @return the first newly registered user
      */
-    public User takeNewlyRegisteredUser() {
+    public User takeNewUserRegistration() {
         try {
-            return this.newlyRegisteredUsers.take();
+            return this.newUserRegistrations.take();
+        } catch (InterruptedException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieve and remove the first deregistered user from the blocking queue,
+     * waiting if necessary until one becomes available.
+     * @return the first newly registered user
+     */
+    public User takeNewUserDeregistration() {
+        try {
+            return this.newUserDeregistrations.take();
         } catch (InterruptedException e) {
             return null;
         }

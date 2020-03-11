@@ -11,6 +11,7 @@ import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Response;
 import java.io.File;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
@@ -43,6 +44,11 @@ public class PeerExpressApp {
     private PeerExpressSignaling signaling;
 
     /**
+     * the user interface of the app
+     */
+    private UserInterface userInterface;
+
+    /**
      * the destination name for the application
      */
     private static String DEST = "PEEREXPRESS";
@@ -65,16 +71,22 @@ public class PeerExpressApp {
      * @param args see usage
      */
     public static void main(String[] args) {
-        if (args.length != 2 && args.length != 3)
+        if (args.length < 2)
             usage();
 
         try {
             String username = args[0];
             int port = Integer.parseInt(args[1]);
+
             File configDirectory = null;
-            if (args.length == 3)
+            if (args.length >= 3)
                 configDirectory = new File(args[2]);
-            PeerExpressApp instance = new PeerExpressApp(username, port, configDirectory);
+
+            boolean consoleMode = false;
+            if (args.length >= 4 && "--console".equals(args[3]))
+                consoleMode = true;
+
+            PeerExpressApp instance = new PeerExpressApp(username, port, configDirectory, consoleMode);
             instance.run();
         } catch (NumberFormatException e) {
             System.err.println("The port is not a number: " + args[1]);
@@ -89,10 +101,14 @@ public class PeerExpressApp {
      * @param username the username in the community
      * @param port the opened port of the local JORAM server
      * @param configDirectory the JORAM configuration directory, if set to null, use $USER_HOME/.joram
+     * @param consoleMode if set to true, the app is in console mode, otherwise the graphic user interface is used
      */
-    public PeerExpressApp(String username, int port, File configDirectory) throws Exception {
+    public PeerExpressApp(String username, int port, File configDirectory, boolean consoleMode) throws Exception {
         this.username = username;
         String host = InetAddress.getLocalHost().getHostName();
+
+        // create the user interface
+        this.userInterface = consoleMode ? new ConsoleUserInterface(this) : new ConsoleUserInterface(this);
 
         // set up the local JORAM server
         Joram joram;
@@ -114,7 +130,7 @@ public class PeerExpressApp {
             try {
                 String sender = message.getStringProperty("sender");
                 String content = ((TextMessage) message).getText();
-                System.out.println("[" + sender + "]: " + content);
+                this.userInterface.notifyMessageReceived(sender, content);
             } catch (JMSException e) {
                 System.err.println(e.getMessage());
             }
@@ -133,48 +149,24 @@ public class PeerExpressApp {
             this.usersInfo.put(user.getUsername(), info);
         }
 
-        // start fetching newly registered users
-        this.startLongPolling();
+        // start fetching newly registered users and deregistered users
+        this.startLongPollingRegistration();
+        this.startLongPollingDeregistration();
     }
 
     /**
-     * Launch the application process that executes user commands: SHARE, FILTER
+     * Get the username of the user of the app.
+     * @return the username of the user
+     */
+    public String getUsername() {
+        return this.username;
+    }
+
+    /**
+     * Launch the user interface process that retrieves user commands.
      */
     public void run() {
-        System.out.println("Hello, " + this.username + ". Enter commands:"
-        + "\n QUIT                       to quit the application"
-        + "\n USERS                      to display the list of registered users"
-        + "\n SEND <username> <message>  to send a message to an user");
-
-        Scanner scanner = new Scanner(System.in);
-        String line = scanner.nextLine();
-        while (true) {
-            String[] tokens = line.split(" +");
-            switch (tokens[0]) {
-            case "send":
-            case "SEND":
-                if (tokens.length >= 2) {
-                    String username = tokens[1];
-                    String message = line.replaceFirst("send", "")
-                                         .replaceFirst(username, "")
-                                         .trim();
-                    this.send(username, message);
-                } else {
-                    System.err.println("Usage: send <username> <message>");
-                }
-                break;
-            case "users":
-            case "USERS":
-                this.showUsers();
-                break;
-            case "quit":
-            case "QUIT":
-                this.quit();
-            default:
-                System.err.println("Unknown command: \"" + tokens[0] + "\"");
-            }
-            line = scanner.nextLine();
-        }
+        this.userInterface.run();
     }
 
     /**
@@ -202,10 +194,10 @@ public class PeerExpressApp {
      * Show the registered users.
      */
     public void showUsers() {
-        for (UserInfo info : this.usersInfo.values()) {
-            User user = info.getUser();
-            System.out.println(user.getUsername() + " => " + user.getHost() + ":" + user.getPort());
-        }
+        List<User> users = new ArrayList<>();
+        for (UserInfo info : this.usersInfo.values())
+            users.add(info.getUser());
+        this.userInterface.showUsers(users);
     }
 
     /**
@@ -226,7 +218,7 @@ public class PeerExpressApp {
      * @throws NamingException if an error occurred
      * @throws JMSException if an error occurred
      */
-    public void establishUserSession(String username) throws NamingException, JMSException {
+    private void establishUserSession(String username) throws NamingException, JMSException {
         UserInfo info = this.usersInfo.get(username);
         User user = info.getUser();
         String host = user.getHost();
@@ -283,22 +275,42 @@ public class PeerExpressApp {
     /**
      * Start the long polling to fetch newly registered users.
      */
-    private void startLongPolling() {
-        AsyncHandler<TakeNewlyRegisteredUserResponse> handler = new AsyncHandler<TakeNewlyRegisteredUserResponse>() {
+    private void startLongPollingRegistration() {
+        AsyncHandler<TakeNewUserRegistrationResponse> handler = new AsyncHandler<TakeNewUserRegistrationResponse>() {
             @Override
-            public void handleResponse(Response<TakeNewlyRegisteredUserResponse> response) {
+            public void handleResponse(Response<TakeNewUserRegistrationResponse> response) {
                 try {
                     User user = response.get().getReturn();
                     UserInfo info = new UserInfo(user, null, null);
                     usersInfo.put(user.getUsername(), info);
-                    System.out.println("[" + user.getUsername() + "] connected.");
-                    signaling.takeNewlyRegisteredUserAsync(username, token, this);
+                    userInterface.notifyNewUserRegistration(user.getUsername());
+                    signaling.takeNewUserRegistrationAsync(username, token, this);
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
             }
         };
-        this.signaling.takeNewlyRegisteredUserAsync(this.username, this.token, handler);
+        this.signaling.takeNewUserRegistrationAsync(this.username, this.token, handler);
+    }
+
+    /**
+     * Start the long polling to fetch deregistered users.
+     */
+    private void startLongPollingDeregistration() {
+        AsyncHandler<TakeNewUserDeregistrationResponse> handler = new AsyncHandler<TakeNewUserDeregistrationResponse>() {
+            @Override
+            public void handleResponse(Response<TakeNewUserDeregistrationResponse> response) {
+                try {
+                    User user = response.get().getReturn();
+                    usersInfo.remove(user.getUsername());
+                    userInterface.notifyNewUserDeregistration(user.getUsername());
+                    signaling.takeNewUserDeregistrationAsync(username, token, this);
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        this.signaling.takeNewUserDeregistrationAsync(this.username, this.token, handler);
     }
 
 }

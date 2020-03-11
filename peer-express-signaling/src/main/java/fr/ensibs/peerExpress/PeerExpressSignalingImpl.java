@@ -34,7 +34,7 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
         User user = new User(username, host, port, registrationId);
 
         for (User registeredUser : this.registeredUsers.values())
-            registeredUser.addNewlyRegisteredUser(user);
+            registeredUser.addNewUserRegistration(user);
 
         this.registeredUsers.put(username, user);
         return registrationId;
@@ -50,9 +50,12 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
             throw new PeerExpressSignalingHTTP(404, "The user does not exist");
 
         if (!token.equals(user.getToken()))
-            throw new PeerExpressSignalingHTTP(401, "The registration ID is incorrect");
+            throw new PeerExpressSignalingHTTP(401, "The registration token is incorrect");
 
         this.registeredUsers.remove(username);
+
+        for (User registeredUser : this.registeredUsers.values())
+            registeredUser.addNewUserDeregistration(user);
     }
 
     @Override
@@ -61,7 +64,7 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
     }
 
     @Override
-    public User takeNewlyRegisteredUser(String username, String token) throws PeerExpressSignalingHTTP {
+    public User takeNewUserRegistration(String username, String token) throws PeerExpressSignalingHTTP {
         if (username == null || token == null)
             throw new PeerExpressSignalingHTTP(400, "The parameters must be specified");
 
@@ -70,9 +73,24 @@ public class PeerExpressSignalingImpl implements PeerExpressSignaling {
             throw new PeerExpressSignalingHTTP(404, "The user does not exist");
 
         if (!token.equals(user.getToken()))
-            throw new PeerExpressSignalingHTTP(401, "The registration ID is incorrect");
+            throw new PeerExpressSignalingHTTP(401, "The registration token is incorrect");
 
-        return user.takeNewlyRegisteredUser();
+        return user.takeNewUserRegistration();
+    }
+
+    @Override
+    public User takeNewUserDeregistration(String username, String token) throws PeerExpressSignalingHTTP {
+        if (username == null || token == null)
+            throw new PeerExpressSignalingHTTP(400, "The parameters must be specified");
+
+        User user = this.registeredUsers.get(username);
+        if (user == null)
+            throw new PeerExpressSignalingHTTP(404, "The user does not exist");
+
+        if (!token.equals(user.getToken()))
+            throw new PeerExpressSignalingHTTP(401, "The registration token is incorrect");
+
+        return user.takeNewUserDeregistration();
     }
 
 }
