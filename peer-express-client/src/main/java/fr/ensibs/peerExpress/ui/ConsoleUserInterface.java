@@ -1,4 +1,7 @@
-package fr.ensibs.peerExpress;
+package fr.ensibs.peerExpress.ui;
+
+import fr.ensibs.peerExpress.PeerExpressApp;
+import fr.ensibs.peerExpress.User;
 
 import java.util.List;
 import java.util.Scanner;
@@ -16,8 +19,11 @@ public class ConsoleUserInterface implements UserInterface {
     /**
      * Constructor.
      * @param app the PeerExpress app instance
+     * @throws Exception if the app instance is null
      */
-    public ConsoleUserInterface(PeerExpressApp app) {
+    public ConsoleUserInterface(PeerExpressApp app) throws Exception {
+        if (app == null)
+            throw new Exception("The app instance must not be null");
         this.app = app;
     }
 
@@ -61,24 +67,32 @@ public class ConsoleUserInterface implements UserInterface {
 
     @Override
     public void showUsers(List<User> users) {
-        if (users != null)
-            for (User user : users)
-                System.out.println(user.getUsername() + " => " + user.getHost() + ":" + user.getPort());
+        for (User user : users) {
+            String username = user.getUsername();
+            String host = user.getHost();
+            int port = user.getPort();
+            System.out.println('[' + username + "]: " + host + ':' + port);
+        }
     }
 
     @Override
     public void notifyMessageReceived(String sender, String content) {
-        System.out.println("[" + sender + "]: " + content);
+        System.out.println('[' + sender + "]: " + content);
     }
 
     @Override
-    public void notifyNewUserRegistration(String username) {
-        System.out.println("[" + username + "] logged in.");
+    public void notifyNewUserRegistration(String username, String host, int port) {
+        System.out.println('[' + username + "] logged in.");
     }
 
     @Override
     public void notifyNewUserDeregistration(String username) {
         System.out.println("[" + username + "] logged out.");
+    }
+
+    @Override
+    public void displayError(String message) {
+        System.err.println(message);
     }
 
     /**

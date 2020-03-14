@@ -1,4 +1,6 @@
-package fr.ensibs.peerExpress;
+package fr.ensibs.peerExpress.ui;
+
+import fr.ensibs.peerExpress.User;
 
 import java.util.List;
 
@@ -28,13 +30,21 @@ public interface UserInterface {
     /**
      * Notify on the interface that a new user has been registered.
      * @param username the username of the new user
+     * @param host the host of the new user
+     * @param port the port of the new user
      */
-    void notifyNewUserRegistration(String username);
+    void notifyNewUserRegistration(String username, String host, int port);
 
     /**
      * Notify on the interface that a user logged out.
      * @param username the username of the user
      */
     void notifyNewUserDeregistration(String username);
+
+    /**
+     * Display on the interface an error message.
+     * @param message the error message
+     */
+    void displayError(String message);
 
 }

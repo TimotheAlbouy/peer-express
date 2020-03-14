@@ -2,6 +2,9 @@ package fr.ensibs.peerExpress;
 
 import fr.ensibs.joram.Joram;
 import fr.ensibs.joram.JoramAdmin;
+import fr.ensibs.peerExpress.ui.ConsoleUserInterface;
+import fr.ensibs.peerExpress.ui.GraphicUserInterface;
+import fr.ensibs.peerExpress.ui.UserInterface;
 
 import javax.jms.*;
 import javax.naming.Context;
@@ -14,7 +17,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -36,7 +39,7 @@ public class PeerExpressApp {
     /**
      * the info on the users identified by their username
      */
-    private HashMap<String, UserInfo> usersInfo = new HashMap<>();
+    private Map<String, UserInfo> usersInfo = new HashMap<>();
 
     /**
      * the signaling server
@@ -108,7 +111,7 @@ public class PeerExpressApp {
         String host = InetAddress.getLocalHost().getHostName();
 
         // create the user interface
-        this.userInterface = consoleMode ? new ConsoleUserInterface(this) : new ConsoleUserInterface(this);
+        this.userInterface = consoleMode ? new ConsoleUserInterface(this) : new GraphicUserInterface(this);
 
         // set up the local JORAM server
         Joram joram;
@@ -132,7 +135,7 @@ public class PeerExpressApp {
                 String content = ((TextMessage) message).getText();
                 this.userInterface.notifyMessageReceived(sender, content);
             } catch (JMSException e) {
-                System.err.println(e.getMessage());
+                this.userInterface.displayError(e.getMessage());
             }
         });
         localConnection.start();
@@ -171,22 +174,22 @@ public class PeerExpressApp {
 
     /**
      * Send a message to an user.
-     * @param username the username of the user
-     * @param message the message to send to the user
+     * @param recipient the username of the recipient
+     * @param content the content of the message to send
      */
-    public void send(String username, String message) {
+    public void send(String recipient, String content) {
         try {
-            UserInfo info = this.usersInfo.get(username);
+            UserInfo info = this.usersInfo.get(recipient);
             if (!info.isSessionEstablished())
-                this.establishUserSession(username);
+                this.establishUserSession(recipient);
 
             Session session = info.getSession();
             MessageProducer producer = info.getProducer();
-            TextMessage textMessage = session.createTextMessage(message);
+            TextMessage textMessage = session.createTextMessage(content);
             textMessage.setStringProperty("sender", this.username);
             producer.send(textMessage);
         } catch (JMSException | NamingException e) {
-            System.err.println(e.getMessage());
+            this.userInterface.displayError(e.getMessage());
         }
     }
 
@@ -207,7 +210,7 @@ public class PeerExpressApp {
         try {
             this.signaling.unregisterUser(this.username, this.token);
         } catch (PeerExpressSignalingHTTP_Exception e) {
-            System.err.println(e.getMessage());
+            this.userInterface.displayError(e.getMessage());
         }
         System.exit(0);
     }
@@ -283,10 +286,10 @@ public class PeerExpressApp {
                     User user = response.get().getReturn();
                     UserInfo info = new UserInfo(user, null, null);
                     usersInfo.put(user.getUsername(), info);
-                    userInterface.notifyNewUserRegistration(user.getUsername());
+                    userInterface.notifyNewUserRegistration(user.getUsername(), user.getHost(), user.getPort());
                     signaling.takeNewUserRegistrationAsync(username, token, this);
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    userInterface.displayError(e.getMessage());
                 }
             }
         };
@@ -306,7 +309,7 @@ public class PeerExpressApp {
                     userInterface.notifyNewUserDeregistration(user.getUsername());
                     signaling.takeNewUserDeregistrationAsync(username, token, this);
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    userInterface.displayError(e.getMessage());
                 }
             }
         };
