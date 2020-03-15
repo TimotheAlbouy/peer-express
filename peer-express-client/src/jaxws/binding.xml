@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bindings
-        wsdlLocation="http://desktop-i097r5c:5000/ws/PeerExpressSignaling?wsdl"
+        wsdlLocation="http://localhost:5000/ws/PeerExpressSignaling?wsdl"
         xmlns="http://java.sun.com/xml/ns/jaxws">
     <enableAsyncMapping>true</enableAsyncMapping>
 </bindings>

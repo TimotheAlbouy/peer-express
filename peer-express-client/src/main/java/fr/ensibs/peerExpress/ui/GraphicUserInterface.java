@@ -109,7 +109,7 @@ public class GraphicUserInterface extends JFrame implements UserInterface {
         List<MessageInfo> messages = this.messagesInfo.computeIfAbsent(sender, k -> new ArrayList<>());
         messages.add(new MessageInfo(sender, content));
         if (sender.equals(this.correspondent))
-            this.addMessageLabel(content, false);
+            this.addMessageLabel(sender, content);
     }
 
     @Override
@@ -169,7 +169,7 @@ public class GraphicUserInterface extends JFrame implements UserInterface {
     private void createRightPanel() {
         // create a display area that will show the correspondent's username
         JPanel correspondentWrapper = new JPanel();
-        this.correspondentDisplay = new JLabel("");
+        this.correspondentDisplay = new JLabel();
         this.correspondentDisplay.setAlignmentX(Component.CENTER_ALIGNMENT);
         correspondentWrapper.add(this.correspondentDisplay);
 
@@ -178,7 +178,7 @@ public class GraphicUserInterface extends JFrame implements UserInterface {
         this.messagesDisplay.setLayout(new BoxLayout(this.messagesDisplay, BoxLayout.Y_AXIS));
 
         // create a text field to write messages
-        JTextField messageField = new JTextField("", 50);
+        JTextField messageField = new JTextField(50);
 
         // when the ENTER key is pressed on the text field
         messageField.addActionListener(e -> {
@@ -188,7 +188,7 @@ public class GraphicUserInterface extends JFrame implements UserInterface {
                 List<MessageInfo> messages = this.messagesInfo
                         .computeIfAbsent(this.correspondent, k -> new ArrayList<>());
                 messages.add(new MessageInfo(sender, content));
-                this.addMessageLabel(content, true);
+                this.addMessageLabel(sender, content);
 
                 messageField.setText("");
                 this.app.send(this.correspondent, content);
@@ -222,8 +222,9 @@ public class GraphicUserInterface extends JFrame implements UserInterface {
             List<MessageInfo> messages = this.messagesInfo.get(username);
             if (messages != null) {
                 for (MessageInfo message : messages) {
-                    boolean alignRight = this.app.getUsername().equals(message.getSender());
-                    this.addMessageLabel(message.getContent(), alignRight);
+                    String sender = message.getSender();
+                    String content = message.getContent();
+                    this.addMessageLabel(sender, content);
                 }
             }
         }
@@ -231,16 +232,13 @@ public class GraphicUserInterface extends JFrame implements UserInterface {
 
     /**
      * Add a message label to the message area.
+     * @param sender the sender of the message
      * @param content the content of the message
-     * @param alignRight true if the message has been sent by the local user,
-     *                   false if it has been sent by the remote user
      */
-    private void addMessageLabel(String content, boolean alignRight) {
-        JPanel messageWrapper = new JPanel();
-        int alignment = alignRight ? SwingConstants.RIGHT : SwingConstants.LEFT;
-        JLabel messageLabel = new JLabel(content, alignment);
-        messageWrapper.add(messageLabel);
-        //this.messagesDisplay.add(messageWrapper);
+    private void addMessageLabel(String sender, String content) {
+        String text = '[' + sender + "]: " + content;
+        JLabel messageLabel = new JLabel(text);
+        messageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         this.messagesDisplay.add(messageLabel);
         this.messagesDisplay.revalidate();
         this.messagesDisplay.repaint();

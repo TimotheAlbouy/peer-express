@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.ensibs</groupId>
     <artifactId>peer-express-client</artifactId>
-    <version>2.0</version>
+    <version>1</version>
     <packaging>jar</packaging>
     <name>Client of the Peer-Express application</name>
     <description>A peer-to-peer messaging application</description>
@@ -67,7 +67,7 @@
                             <packageName>fr.ensibs.peerExpress</packageName>
                             <keep>true</keep>
                             <wsdlUrls>
-                                <wsdlUrl>http://desktop-i097r5c:5000/ws/PeerExpressSignaling?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:5000/ws/PeerExpressSignaling?wsdl</wsdlUrl>
                             </wsdlUrls>
                         </configuration>
                     </execution>

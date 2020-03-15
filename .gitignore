@@ -1,24 +1,17 @@
+# Maven
 **/target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-.mvn/wrapper/maven-wrapper.jar
 
+# IDEA
 .idea/
 *.iml
 .metadata/
 
+# Eclipse
 **/.classpath
 **/.project
 **/.settings/
 
+# Joram
 server.log.*
 a3servers.xml
-
 joram_config_*/
