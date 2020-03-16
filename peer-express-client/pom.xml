@@ -67,7 +67,7 @@
                             <packageName>fr.ensibs.peerExpress</packageName>
                             <keep>true</keep>
                             <wsdlUrls>
-                                <wsdlUrl>http://localhost:5000/ws/PeerExpressSignaling?wsdl</wsdlUrl>
+                                <wsdlUrl>http://desktop-i097r5c:5000/ws/PeerExpressSignaling?wsdl</wsdlUrl>
                             </wsdlUrls>
                         </configuration>
                     </execution>

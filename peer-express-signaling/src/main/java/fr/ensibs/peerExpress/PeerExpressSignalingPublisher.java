@@ -2,6 +2,7 @@ package fr.ensibs.peerExpress;
 
 import javax.xml.ws.Endpoint;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Web service publisher of the Peer Express signaling server.
@@ -28,6 +29,8 @@ public class PeerExpressSignalingPublisher {
         } catch (NumberFormatException e) {
             System.err.println("The port is not a number: " + args[0]);
             usage();
+        } catch (UnknownHostException e) {
+            System.err.println("The local hostname is not found");
         }
     }
 
@@ -43,10 +46,12 @@ public class PeerExpressSignalingPublisher {
     /**
      * Constructor.
      * @param port the port number where the service is published
+     * @throws UnknownHostException if the local hostname is not found
      */
-    public PeerExpressSignalingPublisher(int port) {
+    public PeerExpressSignalingPublisher(int port) throws UnknownHostException {
+        String host = InetAddress.getLocalHost().getHostName();
         PeerExpressSignaling signaling = new PeerExpressSignalingImpl();
-        String address = "http://localhost:" + port + "/ws/" + SERVICE;
+        String address = "http://" + host + ":" + port + "/ws/" + SERVICE;
         Endpoint.publish(address, signaling);
         System.out.println("Web service published and running at: " + address);
     }

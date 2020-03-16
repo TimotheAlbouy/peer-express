@@ -36,7 +36,46 @@ Then, go back to the root directory and launch the server's jar:
 
     java -jar peer-express-signaling/target/peer-express-signaling-1.jar <port>
 
-Once the WSDL is published, you can build the whole project by typing:
+Once the WSDL is published, you have to modify the hostname and port appearing in the different XML configuration files
+of the client so that it matches the one of the computer running the web-services. For example, if the hostname and
+port of this computer is `desktop-i097r5c:5000`, you have to change the given files like that:
+ 
+`peer-express-client/src/jaxws/binding.xml`:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <bindings
+        wsdlLocation="http://desktop-i097r5c:5000/ws/PeerExpressSignaling?wsdl"
+        xmlns="http://java.sun.com/xml/ns/jaxws">
+      <enableAsyncMapping>true</enableAsyncMapping>
+    </bindings>
+
+`peer-express-client/pom.xml`:
+
+    ...
+    <plugin>
+      <groupId>com.sun.xml.ws</groupId>
+      <artifactId>jaxws-maven-plugin</artifactId>
+      <version>2.3.3-b01</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>wsimport</goal>
+          </goals>
+          <configuration>
+            <packageName>fr.ensibs.peerExpress</packageName>
+            <keep>true</keep>
+            <wsdlUrls>
+              <wsdlUrl>http://desktop-i097r5c:5000/ws/PeerExpressSignaling?wsdl</wsdlUrl>
+            </wsdlUrls>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+    ...
+
+You have to do this for every client of the different computers connected to the web-services.
+
+Finally, you can build the whole project by typing:
 
     mvn install
 
